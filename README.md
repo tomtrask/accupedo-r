@@ -3,9 +3,9 @@ This is the tool I use to analyze my accupedo pedometer sqlite diaries table
 data to answer the question: do I get enough exercise.
 
 On a periodic basis, I will:
-1 hook up my phone to the computer (MBP),
-2 drag the Accupedo.db sqlite database over to a local folder
-3 run accupedo.r (it currently expects the data in that Accupedo.db file)
+1. hook up my phone to the computer (MBP),
+2. drag the Accupedo.db sqlite database over to a local folder
+3. run accupedo.r (it currently expects the data in that Accupedo.db file)
 
 The tool gives a breakdown of the number of time slices in that database that
 can be construed as measurable increased intensity activity (MIIA). MIIA are
