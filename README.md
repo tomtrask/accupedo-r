@@ -1,39 +1,71 @@
 # accupedo-r
 This is the tool I use to analyze my accupedo pedometer sqlite diaries table
-data to answer the question: do I get enough exercise.
+data to answer the question: do I get enough exercise?
+
+### What Accupedo does
+Accupedo is a phone pedometer app. It maintains a sqlite
+database called Accupedo that on my Android phone I can
+easily transfer to my computer and analyze.
+
+That database contains approximately one record for each
+half hour slice of time for each day the app is installed.
+There are times that the slices are shorter and longer,
+ I do not understand why. Each slice contains a cumulative
+ step count and step time for the day. Note that if you only
+ walk 15 minutes in a given half hour slice, the cumulative
+ walk time will increase only by 15 minutes, not 30 minutes.
+
+### What this script does
+
+This tool converts the cumulative time slices into another
+table called incremental_diary where records in the incremental_diary
+reflect only the time and steps during that time slice.
+Each time slice is then graded to determine whether MIIA has
+occurred in that time period. Days in which some MIIA has
+occurred are separated from days in which no MIIA has
+occurred. Stats are presented for the universe of days as
+well as those two subsets (MIIA and non-MIIA).
+
+What is MIIA? MIIA is defined as a time interval in which
+the user has raised their heart rate to 110 beats per minute.
+Since Accupedo doesn't track heart rate, we use a step
+rate - miia_rate_cutoff - as a proxy. For me, if I walk
+at a rate of 122 steps per minute, about 9 minutes a mile,
+or faster, my heart rate gets into that 110 zone.
+
+This script computes statistics for two time frames. The
+first time frame is all-time (i.e. since the app was
+installed on the phone). The second time frame is user
+controlled through the --recent_interval_days command
+line flag and the default is 30 days.
+
+I have read in a couple of places that I can tell my doctor
+that I exercise regularly if I get 150 minutes per week
+of MIIA (Look up a Dr Carrell that does Healthcare Triage
+on youtube). That averages out to ~22 minutes a day (it
+doesn't pay to round down on your exercise).
+
+### How to use the script
 
 On a periodic basis, I will:
 1. hook up my phone to the computer (MBP),
 2. drag the Accupedo.db sqlite database over to a local folder
-3. run accupedo.r (it currently expects the data in that Accupedo.db file)
+3. run accupedo.r either from r or Rscript
 
-The tool gives a breakdown of the number of time slices in that database that
-can be construed as measurable increased intensity activity (MIIA). MIIA are
-those activities that exceed some threshold value. The threshold value I use
-is 125 steps per minute but ymmv. The threshold can be determined as that pace
-that gets your heart rate up to 110 beats per minute.
+### What's missing
 
-The tool divides your pedometer history into days that you have any MIIA and
-days in which no MIIA took place. Accupedo keeps a record of all activity since
-the time it was installed in 30 minute chunks (with some exceptions I've yet to
-figure out). In each 30 minute slice of time, they will record a number of
-steps and an amount of time you were in motion. The accupedo app maintains a
-running total during the day, this tool reverts that to an incremental quantity
-for each time slice.
+Some day I'll add the words at the daily MIIA figure
+that say whether the average daily requirement for
+exercise has been achieved. Until then, you'll just
+have to remember that 22min/day figure.
 
-The end product of this tool is a description of how much MIIA you get per day
-for the life of the database and for an interesting recent time-slice. I've set
-that interval to be 30 days because I'd really like to not hit my exercise goal
-for that period of time. Unfortunately, I'm only showing a daily average MIIA
-achievement while the numbers I've read seen to indicate that I should shoot
-for a weekly target of 150 minutes. Daily that comes out to something over 21
-minutes a day.
+I'd also like to add some weekly aggregates.
 
-As you can maybe see, there are some problems with using Accupedo's data this
-way. If I try to get one half hour of fast walking in a day, there's a non-zero
-probability that the activity will straddle two of Accupedo's natural measure-
-ment intervals and it's possible that other activity in those intervals will
-drag the average down enough that the two halves will be lost - neither of
-the two Accupedo intervals will look like exercise. There's a couple of work-
-arounds.
+Graphs aren't out of the question, but they don't add
+a lot of value. The goal is just to see if I'm getting
+enough exercise, not to monday-morning quarterback
+that month I took off when I was on vacation last
+year.
 
+That said, a graph of exercise by day of week could be
+useful.
