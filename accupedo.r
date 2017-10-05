@@ -1,41 +1,29 @@
 library(sqldf)
 library(Hmisc)
 
-setwd('~/pg/nw/pedoLog/accupedo/test')
+require(optparse)
 
-TEST_DB_NAME_ = 'Accupedo.db'
+option_list = list(
+  make_option(c("--accupedo_db_name"), action="store", default="Accupedo.db",
+              type='character', help="Name of the database file."),
+  make_option(c("--miia_rate_cutoff"), action="store", default=125,
+              type='integer',
+              help="Pace we call measurable increased intensity activity (MIIA)."),
+  make_option(c("--recent_interval_days"), action="store", default=30,
+              type='integer',
+              help="Recent time interval of interest.")
+)
 
-db <- dbConnect(SQLite(), dbname=TEST_DB_NAME_)
+opt = parse_args(OptionParser(option_list=option_list))
 
-# Tables in the database
-tableNames <- sqldf('SELECT * FROM sqlite_master', dbname = TEST_DB_NAME_)$tbl_name  
-print(tableNames)
+ACCUPEDO_DB_NAME_ = opt$accupedo_db_name
+II_RATE_CUTOFF_ = opt$miia_rate_cutoff
+RECENT_INTERVAL_DAYS_ <- opt$recent_interval_days
 
-# Columns in the School table
-x <- sqldf('pragma table_info(diaries)', dbname = TEST_DB_NAME_)$name   
-print(x)
+db <- dbConnect(SQLite(), dbname=ACCUPEDO_DB_NAME_)
+# TODO(tom): if the file didn't exist, we still open something - should fail
 
-# Data in the School table   
-dingus <- sqldf('SELECT * FROM diaries', dbname = TEST_DB_NAME_)      
-print(paste("diaries has", nrow(dingus), "rows", sep=' '))
-
-#pretty that dataframe all up in here
-dingus$ymd <- (dingus$year * 100 + dingus$month) * 100 + dingus$day
-dingus$hms = (dingus$hour * 100 + dingus$minute) * 100
-
-sql <- '
-SELECT *
-  FROM sqlite_master
-'
-tn <- sqldf(sql, dbname = TEST_DB_NAME_)$tbl_name
-print(paste('SQL:', sql, sep=' '))
-print(tn)
-
-# sqldf('drop table if exists rediaries', dbname = TEST_DB_NAME_)
-# dbBegin(db)
 dbSendStatement(db, 'drop table if exists rediaries')
-# dbCommit(db)
-print("You got here")
 create_rediaries_stmt <- '
 create TEMPORARY table rediaries as
   SELECT CAST(ymdhm AS INT) ymdhm,
@@ -86,11 +74,8 @@ SELECT *
   FROM incremental_diary
  WHERE delta_steptime > 1
 "
-all_walks <- sqldf(all_walks_stmt, dbname=TEST_DB_NAME_)
-II_RATE_CUTOFF_ <- 125
+all_walks <- sqldf(all_walks_stmt, dbname=ACCUPEDO_DB_NAME_)
 exercise <- all_walks[all_walks$delta_steps/all_walks$delta_steptime >= II_RATE_CUTOFF_,]
-exercise_agg <- aggregate(delta_steptime ~ ymd, exercise,
-                          function(time) sum(time))
 
 ymd_to_iso <- function(ymd) {
   # Convert a single decimal date to a POSIXct date
@@ -113,7 +98,6 @@ decimal_date_diff <- function(decimal_date_1, decimal_date_2) {
 least_recent_day <- min(all_walks$ymd)
 most_recent_day <- max(all_walks$ymd)
 
-RECENT_INTERVAL_DAYS_ <- 30
 INT_MONTH_BEGIN_ <- ymd_add_days(most_recent_day, 1-RECENT_INTERVAL_DAYS_)
 
 reporter <- function(t1, t2, all_walks, miia_cutoff) {
@@ -197,7 +181,7 @@ reporter <- function(t1, t2, all_walks, miia_cutoff) {
   out <- c(out, "\n")
 
   cat(out)
-  
+
   return(all_step_rate)
 }
 
