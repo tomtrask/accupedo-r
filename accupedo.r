@@ -4,14 +4,16 @@ library(Hmisc)
 require(optparse)
 
 option_list = list(
-  make_option(c("--accupedo_db_name"), action="store", default="Accupedo.db",
+  make_option(c("-a", "--accupedo_db_name"), action="store", default="Accupedo.db",
               type='character', help="Name of the database file."),
-  make_option(c("--miia_rate_cutoff"), action="store", default=125,
+  make_option(c("-m", "--miia_rate_cutoff"), action="store", default=125,
               type='integer',
               help="Pace we call measurable increased intensity activity (MIIA)."),
-  make_option(c("--recent_interval_days"), action="store", default=30,
+  make_option(c("-r", "--recent_interval_days"), action="store", default=30,
               type='integer',
-              help="Recent time interval of interest.")
+              help="Recent time interval of interest."),
+  make_option(c("--target_weekly_miia"), action="store", default=150,
+              type="integer", help="Weekly target MIIA in minutes")
 )
 
 opt = parse_args(OptionParser(option_list=option_list))
@@ -19,6 +21,8 @@ opt = parse_args(OptionParser(option_list=option_list))
 ACCUPEDO_DB_NAME_ = opt$accupedo_db_name
 II_RATE_CUTOFF_ = opt$miia_rate_cutoff
 RECENT_INTERVAL_DAYS_ <- opt$recent_interval_days
+TARGET_DAILY_MIIA_ <- opt$target_weekly_miia/7
+NEAR_DAILY_MIIA_ <- as.integer(TARGET_DAILY_MIIA_/1.1)
 
 db <- dbConnect(SQLite(), dbname=ACCUPEDO_DB_NAME_)
 # TODO(tom): if the file didn't exist, we still open something - should fail
@@ -140,6 +144,10 @@ reporter <- function(t1, t2, all_walks, miia_cutoff) {
   no_ii_time <- sum(notrt_walks$delta_steptime)/num_notrt_days
 
   all_step_rate <- num_unv_steps/all_time
+  daily_miia_time <- miia_step_time/num_unv_days
+  rating <- ifelse(daily_miia_time >= TARGET_DAILY_MIIA_, "met target",
+                  ifelse(daily_miia_time >= NEAR_DAILY_MIIA_,
+                  "within 10% of target","missed target"))
 
   out <- c()
   out <- c(out, sprintf("History: %d to %d (%d days)\n", t1, t2, diff_days))
@@ -151,11 +159,13 @@ reporter <- function(t1, t2, all_walks, miia_cutoff) {
   out <- c(out, sprintf("    Daily steps: %.0f\n",
                         num_unv_steps/num_unv_days))
   out <- c(out, sprintf("    Daily MIIA steps: %.0f (%.1f %%)\n",
-                        num_miia_steps/num_unv_days, 100*num_miia_steps/num_unv_steps))
+                        num_miia_steps/num_unv_days,
+                        100*num_miia_steps/num_unv_steps))
   out <- c(out, sprintf("    Daily time, min: %.1f\n",
                         unv_step_time/num_unv_days))
-  out <- c(out, sprintf("    Daily MIIA time, min: %.1f (%.1f %%)\n",
-                        miia_step_time/num_unv_days, 100*miia_step_time/unv_step_time))
+  out <- c(out, sprintf("    Daily MIIA time, min: %.1f, %s (%.1f %%)\n",
+                        miia_step_time/num_unv_days, rating,
+                        100*miia_step_time/unv_step_time))
   out <- c(out, sprintf("    Average pace, steps/min: %.0f\n",
                         num_unv_steps/unv_step_time))
   out <- c(out, "- Non-MIIA days only\n")

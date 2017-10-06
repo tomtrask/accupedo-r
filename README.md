@@ -43,7 +43,9 @@ I have read in a couple of places that I can tell my doctor
 that I exercise regularly if I get 150 minutes per week
 of MIIA (Look up a Dr Carrell that does Healthcare Triage
 on youtube). That averages out to ~22 minutes a day (it
-doesn't pay to round down on your exercise).
+doesn't pay to round down on your exercise). This target
+can be changed with the --target_weekly_miia (-t) command
+line parameter.
 
 ### How to use the script
 
@@ -53,11 +55,6 @@ On a periodic basis, I will:
 3. run accupedo.r either from r or Rscript
 
 ### What's missing
-
-Some day I'll add the words at the daily MIIA figure
-that say whether the average daily requirement for
-exercise has been achieved. Until then, you'll just
-have to remember that 22min/day figure.
 
 I'd also like to add some weekly aggregates.
 
