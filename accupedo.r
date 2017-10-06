@@ -171,24 +171,28 @@ reporter <- function(t1, t2, all_walks, miia_cutoff) {
                         num_unv_steps/unv_step_time))
   out <- c(out, "- Non-MIIA days only\n")
   out <- c(out, sprintf("    # days: %d\n", num_notrt_days))
-  out <- c(out, sprintf("    Daily steps: %.0f\n",
-                        num_notrt_steps/num_notrt_days))
-  out <- c(out, sprintf("    Daily time, min: %.1f\n",
-                        notrt_step_time/num_notrt_days))
-  out <- c(out, sprintf("    Average pace, steps/min: %.0f\n",
-                        num_notrt_steps/notrt_step_time))
+  if (num_notrt_days > 0) {
+    out <- c(out, sprintf("    Daily steps: %.0f\n",
+                          num_notrt_steps/num_notrt_days))
+    out <- c(out, sprintf("    Daily time, min: %.1f\n",
+                          notrt_step_time/num_notrt_days))
+    out <- c(out, sprintf("    Average pace, steps/min: %.0f\n",
+                          num_notrt_steps/notrt_step_time))
+  }
   out <- c(out, "- MIIA days only\n")
   out <- c(out, sprintf("    # days: %d\n", num_trt_days))
-  out <- c(out, sprintf("    Daily steps: %.0f\n",
-                        num_trt_steps/num_trt_days))
-  out <- c(out, sprintf("    Daily MIIA steps: %.0f (%.1f %%)\n",
-                        num_miia_steps/num_trt_days, 100*num_miia_steps/num_trt_steps))
-  out <- c(out, sprintf("    Daily time, min: %.1f\n",
-                        trt_step_time/num_trt_days))
-  out <- c(out, sprintf("    Daily MIIA time, min: %.1f (%.1f %%)\n",
-                        miia_step_time/num_trt_days, 100*miia_step_time/trt_step_time))
-  out <- c(out, sprintf("    Average pace, steps/min: %.0f\n",
-                        num_trt_steps/trt_step_time))
+  if (num_trt_days > 0) {
+    out <- c(out, sprintf("    Daily steps: %.0f\n",
+                          num_trt_steps/num_trt_days))
+    out <- c(out, sprintf("    Daily MIIA steps: %.0f (%.1f %%)\n",
+                          num_miia_steps/num_trt_days, 100*num_miia_steps/num_trt_steps))
+    out <- c(out, sprintf("    Daily time, min: %.1f\n",
+                          trt_step_time/num_trt_days))
+    out <- c(out, sprintf("    Daily MIIA time, min: %.1f (%.1f %%)\n",
+                          miia_step_time/num_trt_days, 100*miia_step_time/trt_step_time))
+    out <- c(out, sprintf("    Average pace, steps/min: %.0f\n",
+                          num_trt_steps/trt_step_time))
+  }
   out <- c(out, "\n")
 
   cat(out)
