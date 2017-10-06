@@ -12,7 +12,7 @@ option_list = list(
   make_option(c("-r", "--recent_interval_days"), action="store", default=30,
               type='integer',
               help="Recent time interval of interest."),
-  make_option(c("--target_weekly_miia"), action="store", default=150,
+  make_option(c("-t", "--target_weekly_miia"), action="store", default=150,
               type="integer", help="Weekly target MIIA in minutes")
 )
 
@@ -145,9 +145,10 @@ reporter <- function(t1, t2, all_walks, miia_cutoff) {
 
   all_step_rate <- num_unv_steps/all_time
   daily_miia_time <- miia_step_time/num_unv_days
-  rating <- ifelse(daily_miia_time >= TARGET_DAILY_MIIA_, "met target",
+  rating_fmt <- ifelse(daily_miia_time >= TARGET_DAILY_MIIA_, "met target",
                   ifelse(daily_miia_time >= NEAR_DAILY_MIIA_,
                   "within 10% of target","missed target"))
+  rating <- sprintf("%s (%.0f)", rating_fmt, TARGET_DAILY_MIIA_)
 
   out <- c()
   out <- c(out, sprintf("History: %d to %d (%d days)\n", t1, t2, diff_days))
@@ -191,8 +192,6 @@ reporter <- function(t1, t2, all_walks, miia_cutoff) {
   out <- c(out, "\n")
 
   cat(out)
-
-  return(all_step_rate)
 }
 
 reporter(least_recent_day, most_recent_day, all_walks, II_RATE_CUTOFF_)
