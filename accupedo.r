@@ -25,7 +25,7 @@ TARGET_DAILY_MIIA_ <- opt$target_weekly_miia/7
 NEAR_DAILY_MIIA_ <- as.integer(TARGET_DAILY_MIIA_/1.1)
 
 db <- dbConnect(SQLite(), dbname=ACCUPEDO_DB_NAME_)
-# TODO(tom): if the file didn't exist, we still open something - should fail
+# if we open an empty file we get no results and drop an empty db on the disk
 
 dbSendStatement(db, 'drop table if exists rediaries')
 create_rediaries_stmt <- '
