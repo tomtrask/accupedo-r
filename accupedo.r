@@ -198,7 +198,19 @@ reporter <- function(t1, t2, all_walks, miia_cutoff) {
   cat(out)
 }
 
+sevenDayStats <- function(recent_activity) {
+  # cat(most_recent_day)
+  week_ago <- ymd_add_days(most_recent_day, -6)
+  # cat(recent_activity)
+  zed <- exercise[exercise$ymd>=week_ago,]
+  g <- aggregate(cbind(zed$delta_steps,zed$delta_steptime) ~ zed$ymd, zed, sum)
+  g$rate = g$V1/g$V2
+  print(g)
+}
+
 reporter(least_recent_day, most_recent_day, all_walks, II_RATE_CUTOFF_)
 reporter(INT_MONTH_BEGIN_, most_recent_day, all_walks, II_RATE_CUTOFF_)
+
+sevenDayStats(exercise)
 
 dbDisconnect(db)
