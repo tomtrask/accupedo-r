@@ -1,1 +1,4 @@
 *.db
+.ipynb_checkpoints
+Playground.ipynb
+.rerun.sh
