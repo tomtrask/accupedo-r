@@ -54,6 +54,19 @@ On a periodic basis, I will:
 2. drag the Accupedo.db sqlite database over to a local folder
 3. run accupedo.r either from r or Rscript
 
+### Wait, what about that analyze_accupedo.py script?
+
+That script will fetch the latest Accupedo.db (fixed name() from
+${HOME}/Google\ Drive\Data\Accupedo.db and copy it to the work folder and
+compute the aggregate statistics for the last 30 days and print them out. In
+the time I've been using the accupedo.r script, I've come to rely primarily on
+that recent historical view of exercise as my primary indicator that I need to
+do more or less exercise.  This script also skips over a lot of the growing
+pains I encountered in the R script. The primary motivation for this script is
+that I got a new computer and forgot to install R but it seemed that the pandas
+version of the script was much simpler than my R script - this turns out to have
+been true.
+
 ### What's missing
 
 I'd also like to add some weekly aggregates.
