@@ -31,7 +31,7 @@ def get_aggregate_stats(conn):
     df.drop(columns=["_id"], inplace=True)
 
     df["del_steps"] = df["steps"] - df.shift(1)["steps"]
-    df["del_time"] = df["steptime"] - df.shift(1)["steptime"]
+    df["del_time_min"] = (df["steptime"] - df.shift(1)["steptime"])/60000
 
     # steps reset at midnight so we need to drop the first interval of the day
     df.drop(df[df.del_steps<0].index, inplace=True)
@@ -39,14 +39,14 @@ def get_aggregate_stats(conn):
     df.drop(columns=["year", "month", "day", "hour", "minute", "steps",
                      "steptime"], inplace=True)
 
-    df["pace"] = 60000*df["del_steps"]/df["del_time"]
-    df.drop(df[df.del_time < 60000].index, inplace=True)
+    df["pace"] = df["del_steps"]/df["del_time_min"]
+    df.drop(df[df.del_time_min < 1].index, inplace=True)
     df.drop(df[df.pace < 125].index, inplace=True)
     df.drop(columns=["ymdhm"], inplace=True)
     df.dropna(inplace=True)
 
     redis = df.groupby("ymd").sum()
-    redis["pace"] = 60000*redis["del_steps"]/redis["del_time"]
+    redis["pace"] = redis["del_steps"]/redis["del_time_min"]
 
     return redis
 
