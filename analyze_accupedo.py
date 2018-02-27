@@ -72,10 +72,10 @@ def main():
         pd.set_option("display.width", 0)
         print(agg.tail(30))
         print("====================")
-        print("Lifetime average steps: {0:.0f} (sd={1:.0f})"
-              .format(agg["del_steps"].mean(), agg["del_steps"].std()))
-        print("Lifetime average time: {0:.0f} (sd={1:.0f})"
+        print("Lifetime average time: {0:.0f} min (sd={1:.0f})"
               .format(agg["del_time_min"].mean(), agg["del_time_min"].std()))
+        print("Lifetime average MIIA time: {0:.0f} min (sd={1:.0f})"
+              .format(agg["miia_time_min"].mean(), agg["miia_time_min"].std()))
         last_zero_date = agg[agg["miia_steps"] == 0].index[-1]
         days_since_zero = agg[agg.index > last_zero_date]
         num_days_since_zero = len(days_since_zero.index)
