@@ -32,21 +32,30 @@ def get_aggregate_stats(conn):
 
     df["del_steps"] = df["steps"] - df.shift(1)["steps"]
     df["del_time_min"] = (df["steptime"] - df.shift(1)["steptime"])/60000
+    df["miia_steps"] = df["del_steps"].copy()
+    df["miia_time_min"] = df["del_time_min"].copy()
 
     # steps reset at midnight so we need to drop the first interval of the day
-    df.drop(df[df.del_steps<0].index, inplace=True)
+    df.drop(df[df.del_steps<=0].index, inplace=True)
 
     df.drop(columns=["year", "month", "day", "hour", "minute", "steps",
                      "steptime"], inplace=True)
 
-    df["pace"] = df["del_steps"]/df["del_time_min"]
-    df.drop(df[df.del_time_min < 1].index, inplace=True)
-    df.drop(df[df.pace < 125].index, inplace=True)
+    match_not_fast = df[df["del_steps"]/df["del_time_min"] < 125].index
+    df.loc[match_not_fast, "miia_steps"] = 0
+    df.loc[match_not_fast, "miia_time_min"] = 0
+
+    match_too_small = df[df["del_time_min"] < 1].index
+    df.loc[match_too_small, "miia_steps"] = 0
+    df.loc[match_too_small, "miia_time_min"] = 0
+   
     df.drop(columns=["ymdhm"], inplace=True)
     df.dropna(inplace=True)
 
     redis = df.groupby("ymd").sum()
+    # recompute pace as aggregate pace for group
     redis["pace"] = redis["del_steps"]/redis["del_time_min"]
+    redis["miia_pace"] = redis["miia_steps"]/redis["miia_time_min"]
 
     return redis
 
@@ -58,8 +67,20 @@ def main():
         # Cool, now the only thing we're missing is some accounting for
         # non-MIIA days. A simple count of days since no MIIA activity was
         # detected would suffice
+        pd.set_option("precision", 2)
         print("====================")
+        pd.set_option("display.width", 0)
         print(agg.tail(30))
+        print("====================")
+        print("Lifetime average steps: {0:.0f} (sd={1:.0f})"
+              .format(agg["del_steps"].mean(), agg["del_steps"].std()))
+        print("Lifetime average time: {0:.0f} (sd={1:.0f})"
+              .format(agg["del_time_min"].mean(), agg["del_time_min"].std()))
+        last_zero_date = agg[agg["miia_steps"] == 0].index[-1]
+        days_since_zero = agg[agg.index > last_zero_date]
+        num_days_since_zero = len(days_since_zero.index)
+        print("Days continuous MIIA: {0}".format(num_days_since_zero))
+              
 
 
 if __name__ == "__main__":
