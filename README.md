@@ -4,7 +4,7 @@ data to answer the question: do I get enough exercise?
 
 ### What Accupedo does
 Accupedo is a phone pedometer app. It maintains a sqlite
-database called Accupedo that on my Android phone I can
+database called Accupedo.db that on my Android phone I can
 easily transfer to my computer and analyze.
 
 That database contains approximately one record for each
