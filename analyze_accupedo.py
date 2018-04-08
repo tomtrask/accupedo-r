@@ -68,6 +68,7 @@ def get_aggregate_stats(conn):
     # recompute pace as aggregate pace for group
     redis["pace"] = redis["del_steps"]/redis["del_time_min"]
     redis["miia_pace"] = redis["miia_steps"]/redis["miia_time_min"]
+    redis.fillna(0, inplace=True)
 
     return redis
 
