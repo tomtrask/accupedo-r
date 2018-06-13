@@ -4,6 +4,14 @@ A python version of accupedo.r. This obviates accupedo.r and a related bash
 script that I never checked into github (the function of the bash script was
 to move the sqlite database from the google drive directory - this python
 script does that)
+
+In the original version of this script we ignored segments of activity that were
+shorter than 1 minute. It appears that somewhere near 20180608 the Accupedo
+folks released a newer version that was slicing activity into shorter segments.
+The result of that finer slicing is that we lost a lot of activity since a lot
+of activity was sliced into sub-one-minute segments. The new limit is 5 seconds.
+Activity as short as 5 seconds may count as exercise, anything shorter will not.
+For my own database I found a difference at that level.
 """
 
 from datetime import datetime
@@ -52,12 +60,17 @@ def get_aggregate_stats(conn):
     diaries.drop(columns=["year", "month", "day", "hour", "minute", "steps",
                           "steptime"], inplace=True)
 
+    # match_not_fast tells us what motion intervals are too slow to be counted
+    # as exercise (or it did until 20180608)
     match_not_fast = (diaries[diaries["del_steps"]/diaries["del_time_min"]
                               < 125].index)
     diaries.loc[match_not_fast, "miia_steps"] = 0
     diaries.loc[match_not_fast, "miia_time_min"] = 0
 
-    match_too_small = diaries[diaries["del_time_min"] < 1].index
+    # Aha, so something happened around 20180608 where we accupedo started to
+    # record shorter intervals of activity so now we can tune this too_small
+    # interval to allow us to use shorter intervals. Was 1 minute, is 5 seconds.
+    match_too_small = diaries[diaries["del_time_min"] < 5/60].index
     diaries.loc[match_too_small, "miia_steps"] = 0
     diaries.loc[match_too_small, "miia_time_min"] = 0
 
