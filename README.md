@@ -15,6 +15,10 @@ There are times that the slices are shorter and longer,
  walk 15 minutes in a given half hour slice, the cumulative
  walk time will increase only by 15 minutes, not 30 minutes.
 
+At or about May or June 2018 Accupedo changed the length of the time slices of activity tracking. I changed the script at that time to include shorter time slices in the computation. Previously shorter timeslices were too infrequent and computed to be shorter (conservatively) than the actually were. The effect of those two characteristics was that if we included time slices under a minute was that we'd incorrectly compute too much exercise. The recent changes eliminated a lot of longer intervals - so instead of one 25 minute slice, the new version would give maybe one two-minute slice and 24 sub-minute slices that still looked like exercise. The total in the new version might be 25 minutes but it would probably be less.
+
+At that same time they introduced a new mechanism to use Google Fit (API) to measure activity. If you turn that on, the Accupedo database is effectively useless for tracking exercise.
+
 ### What this script does
 
 This tool converts the cumulative time slices into another
